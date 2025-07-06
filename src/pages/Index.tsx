@@ -9,19 +9,22 @@ import {
   Plus,
   Bell,
   LogOut,
-  User
+  User,
+  MapPin
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useMeetings } from "@/hooks/useMeetings";
 import { toast } from "sonner";
 import { UserMenu } from "@/components/UserMenu";
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { stats, recentMeetings, loading } = useMeetings();
   const [notifications] = useState(3);
 
   const handleSignOut = async () => {
@@ -34,38 +37,38 @@ const Index = () => {
     }
   };
 
-  const stats = [
+  const statsCards = [
     {
-      title: "待处理会议要求",
-      value: "5",
+      title: "待确认会议",
+      value: stats.pending.toString(),
       description: "需要与数字分身确认",
       icon: MessageSquare,
       color: "bg-gradient-to-br from-blue-500 to-blue-600",
-      trend: "+2"
+      trend: stats.pending > 0 ? `+${stats.pending}` : "0"
     },
     {
       title: "已确认会议安排",
-      value: "12",
+      value: stats.confirmed.toString(),
       description: "等待参会者响应",
       icon: Calendar,
       color: "bg-gradient-to-br from-green-500 to-green-600",
-      trend: "+3"
+      trend: stats.confirmed > 0 ? `+${stats.confirmed}` : "0"
     },
     {
       title: "材料准备中",
-      value: "8",
+      value: "0", // 暂时硬编码，后续可以添加材料系统
       description: "数字分身正在处理",
       icon: FileText,
       color: "bg-gradient-to-br from-purple-500 to-purple-600",
-      trend: "+1"
+      trend: "0"
     },
     {
       title: "本周会议",
-      value: "24",
+      value: stats.thisWeek.toString(),
       description: "包含已完成会议",
       icon: Users,
       color: "bg-gradient-to-br from-orange-500 to-orange-600",
-      trend: "+6"
+      trend: stats.thisWeek > 0 ? `+${stats.thisWeek}` : "0"
     }
   ];
 
@@ -93,33 +96,6 @@ const Index = () => {
     }
   ];
 
-  const recentMeetings = [
-    {
-      id: 1,
-      title: "项目启动会议",
-      time: "2024-01-15 14:00",
-      status: "confirmed",
-      participants: 8,
-      aiStatus: "材料准备完成"
-    },
-    {
-      id: 2,
-      title: "季度总结会议",
-      time: "2024-01-16 10:00",
-      status: "pending",
-      participants: 12,
-      aiStatus: "等待场地确认"
-    },
-    {
-      id: 3,
-      title: "技术讨论会",
-      time: "2024-01-17 16:00",
-      status: "preparing",
-      participants: 6,
-      aiStatus: "数字分身处理中"
-    }
-  ];
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed': return 'bg-green-100 text-green-800';
@@ -135,8 +111,19 @@ const Index = () => {
       case 'pending': return '待确认';
       case 'preparing': return '准备中';
       default: return '未知';
-    }
+    };
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">正在加载数据...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -183,7 +170,7 @@ const Index = () => {
 
         {/* 统计概览区域 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
+          {statsCards.map((stat, index) => (
             <Card key={index} className="relative overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer">
               <div className={`absolute inset-0 ${stat.color} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -263,24 +250,31 @@ const Index = () => {
                             {getStatusText(meeting.status)}
                           </Badge>
                         </div>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <div className="flex items-center space-x-1">
-                            <Clock className="w-4 h-4" />
-                            <span>{meeting.time}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Users className="w-4 h-4" />
-                            <span>{meeting.participants} 人参会</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-blue-600 mb-1">
-                          数字分身状态
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {meeting.aiStatus}
-                        </div>
+                         <div className="flex items-center space-x-4 text-sm text-gray-500">
+                           <div className="flex items-center space-x-1">
+                             <Clock className="w-4 h-4" />
+                             <span>{new Date(meeting.start_time).toLocaleString()}</span>
+                           </div>
+                           <div className="flex items-center space-x-1">
+                             <Users className="w-4 h-4" />
+                             <span>{meeting.attendees?.length || 0} 人参会</span>
+                           </div>
+                           {meeting.meeting_room && (
+                             <div className="flex items-center space-x-1">
+                               <MapPin className="w-4 h-4" />
+                               <span>{meeting.meeting_room.name}</span>
+                             </div>
+                           )}
+                         </div>
+                       </div>
+                       <div className="text-right">
+                         <div className="text-sm font-medium text-blue-600 mb-1">
+                           数字分身状态
+                         </div>
+                         <div className="text-sm text-gray-500">
+                           {meeting.status === 'confirmed' ? '会议已确认' : 
+                            meeting.status === 'pending' ? '等待确认中' : '处理中'}
+                         </div>
                       </div>
                     </div>
                   </div>
