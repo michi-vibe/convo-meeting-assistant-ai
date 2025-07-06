@@ -170,7 +170,11 @@ const Auth = () => {
                           <Input 
                             placeholder="请输入您的邮箱地址" 
                             type="email"
-                            {...field} 
+                            value={field.value}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            disabled={field.disabled}
                           />
                         </FormControl>
                         <FormMessage />
@@ -189,7 +193,11 @@ const Auth = () => {
                             <Input 
                               placeholder="请输入您的密码" 
                               type={showPassword ? "text" : "password"}
-                              {...field} 
+                              value={field.value}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              name={field.name}
+                              disabled={field.disabled}
                             />
                             <Button
                               type="button"
@@ -262,7 +270,14 @@ const Auth = () => {
                       <FormItem>
                         <FormLabel>用户名</FormLabel>
                         <FormControl>
-                          <Input placeholder="请输入用户名" {...field} />
+                          <Input 
+                            placeholder="请输入用户名" 
+                            value={field.value}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            disabled={field.disabled}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -276,7 +291,15 @@ const Auth = () => {
                       <FormItem>
                         <FormLabel>邮箱地址</FormLabel>
                         <FormControl>
-                          <Input placeholder="请输入邮箱地址" type="email" {...field} />
+                          <Input 
+                            placeholder="请输入邮箱地址" 
+                            type="email" 
+                            value={field.value}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            disabled={field.disabled}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -294,7 +317,11 @@ const Auth = () => {
                             <Input 
                               placeholder="请输入密码（至少6位）" 
                               type={showPassword ? "text" : "password"}
-                              {...field} 
+                              value={field.value}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              name={field.name}
+                              disabled={field.disabled}
                             />
                             <Button
                               type="button"
@@ -327,7 +354,11 @@ const Auth = () => {
                             <Input 
                               placeholder="请再次输入密码" 
                               type={showConfirmPassword ? "text" : "password"}
-                              {...field} 
+                              value={field.value}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              name={field.name}
+                              disabled={field.disabled}
                             />
                             <Button
                               type="button"
