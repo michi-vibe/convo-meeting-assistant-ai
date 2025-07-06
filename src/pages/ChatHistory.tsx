@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Bot, User, MessageSquare, Clock, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -149,9 +151,9 @@ const ChatHistory = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col">
       {/* 顶部导航 */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -171,10 +173,11 @@ const ChatHistory = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: 'calc(100vh - 200px)' }}>
+      {/* 主要内容区域 */}
+      <div className="flex-1 max-w-7xl mx-auto px-6 py-6 w-full overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
           {/* 会话列表 */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 h-full">
             <Card className="h-full flex flex-col">
               <CardHeader className="flex-shrink-0 pb-4">
                 <CardTitle className="flex items-center space-x-2">
@@ -204,7 +207,7 @@ const ChatHistory = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                  <ScrollArea className="h-full">
                     <div className="divide-y divide-gray-100">
                       {sessions.map((session) => (
                         <div
@@ -232,14 +235,14 @@ const ChatHistory = () => {
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </ScrollArea>
                 )}
               </CardContent>
             </Card>
           </div>
 
           {/* 消息详情 */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 h-full">
             <Card className="h-full flex flex-col">
               <CardHeader className="flex-shrink-0 pb-4">
                 <CardTitle className="flex items-center space-x-2">
@@ -265,50 +268,52 @@ const ChatHistory = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="h-full overflow-y-auto space-y-4 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                    {messages.map((message, index) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${message.message_type === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
-                        style={{ animationDelay: `${index * 0.05}s` }}
-                      >
-                        <div className={`flex space-x-3 max-w-[80%] ${
-                          message.message_type === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-                        }`}>
-                          {/* 头像 */}
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            message.message_type === 'user' 
-                              ? 'bg-gradient-to-r from-blue-500 to-purple-500' 
-                              : 'bg-gradient-to-r from-green-500 to-blue-500'
+                  <ScrollArea className="h-full">
+                    <div className="space-y-4 pr-2">
+                      {messages.map((message, index) => (
+                        <div
+                          key={message.id}
+                          className={`flex ${message.message_type === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
+                          style={{ animationDelay: `${index * 0.05}s` }}
+                        >
+                          <div className={`flex space-x-3 max-w-[80%] ${
+                            message.message_type === 'user' ? 'flex-row-reverse space-x-reverse' : ''
                           }`}>
-                            {message.message_type === 'user' ? (
-                              <User className="w-4 h-4 text-white" />
-                            ) : (
-                              <Bot className="w-4 h-4 text-white" />
-                            )}
-                          </div>
-
-                          {/* 消息内容 */}
-                          <div className="flex-1">
-                            <div className={`rounded-2xl px-4 py-3 transition-all duration-200 hover:shadow-md ${
-                              message.message_type === 'user'
-                                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                                : 'bg-gray-100 text-gray-900 hover:bg-gray-50'
+                            {/* 头像 */}
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                              message.message_type === 'user' 
+                                ? 'bg-gradient-to-r from-blue-500 to-purple-500' 
+                                : 'bg-gradient-to-r from-green-500 to-blue-500'
                             }`}>
-                              <div className="whitespace-pre-wrap">{message.content}</div>
+                              {message.message_type === 'user' ? (
+                                <User className="w-4 h-4 text-white" />
+                              ) : (
+                                <Bot className="w-4 h-4 text-white" />
+                              )}
                             </div>
-                            
-                            {/* 时间戳 */}
-                            <div className={`flex items-center space-x-2 mt-2 text-xs text-gray-500 ${
-                              message.message_type === 'user' ? 'justify-end' : 'justify-start'
-                            }`}>
-                              <span>{formatDate(message.created_at)}</span>
+
+                            {/* 消息内容 */}
+                            <div className="flex-1">
+                              <div className={`rounded-2xl px-4 py-3 transition-all duration-200 hover:shadow-md ${
+                                message.message_type === 'user'
+                                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                                  : 'bg-gray-100 text-gray-900 hover:bg-gray-50'
+                              }`}>
+                                <div className="whitespace-pre-wrap">{message.content}</div>
+                              </div>
+                              
+                              {/* 时间戳 */}
+                              <div className={`flex items-center space-x-2 mt-2 text-xs text-gray-500 ${
+                                message.message_type === 'user' ? 'justify-end' : 'justify-start'
+                              }`}>
+                                <span>{formatDate(message.created_at)}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
                 )}
               </CardContent>
             </Card>
