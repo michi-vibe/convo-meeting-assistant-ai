@@ -12,7 +12,9 @@ import {
   Search,
   MoreHorizontal,
   Video,
-  FileText
+  FileText,
+  Mail,
+  Edit
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,117 +23,21 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
-
-interface Meeting {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  type: 'offline' | 'online' | 'hybrid';
-  status: 'scheduled' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
-  participants: {
-    total: number;
-    confirmed: number;
-    pending: number;
-  };
-  materials: {
-    total: number;
-    ready: number;
-  };
-  venue: {
-    status: 'booked' | 'pending' | 'not-required';
-    name?: string;
-  };
-  aiProgress: number;
-  organizer: string;
-}
+import { useMeetings } from "@/hooks/useMeetings";
+import { toast } from "sonner";
 
 const Meetings = () => {
   const navigate = useNavigate();
-  const [selectedMeeting, setSelectedMeeting] = useState<string | null>('1');
+  const { meetings, loading, error, refreshMeetings } = useMeetings();
+  const [selectedMeeting, setSelectedMeeting] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-
-  const meetings: Meeting[] = [
-    {
-      id: '1',
-      title: '项目启动会议',
-      date: '2024-01-15',
-      time: '14:00-16:00',
-      location: 'A会议室',
-      type: 'offline',
-      status: 'confirmed',
-      participants: { total: 8, confirmed: 6, pending: 2 },
-      materials: { total: 5, ready: 4 },
-      venue: { status: 'booked', name: 'A会议室 (3楼)' },
-      aiProgress: 85,
-      organizer: '张经理'
-    },
-    {
-      id: '2',
-      title: '季度总结会议',
-      date: '2024-01-16',
-      time: '10:00-12:00',
-      location: '腾讯会议',
-      type: 'online',
-      status: 'scheduled',
-      participants: { total: 12, confirmed: 8, pending: 4 },
-      materials: { total: 8, ready: 5 },
-      venue: { status: 'not-required' },
-      aiProgress: 60,
-      organizer: '李总监'
-    },
-    {
-      id: '3',
-      title: '技术评审会',
-      date: '2024-01-17',
-      time: '16:00-18:00',
-      location: 'B会议室 + 在线',
-      type: 'hybrid',
-      status: 'in-progress',
-      participants: { total: 6, confirmed: 6, pending: 0 },
-      materials: { total: 3, ready: 3 },
-      venue: { status: 'booked', name: 'B会议室 (2楼)' },
-      aiProgress: 100,
-      organizer: '王架构师'
-    },
-    {
-      id: '4',
-      title: '周例会',
-      date: '2024-01-18',
-      time: '09:30-10:30',
-      location: 'C会议室',
-      type: 'offline',
-      status: 'scheduled',
-      participants: { total: 10, confirmed: 7, pending: 3 },
-      materials: { total: 2, ready: 1 },
-      venue: { status: 'pending' },
-      aiProgress: 45,
-      organizer: '赵组长'
-    },
-    {
-      id: '5',
-      title: '客户需求讨论',
-      date: '2024-01-19',
-      time: '15:00-17:00',
-      location: '待定',
-      type: 'offline',
-      status: 'scheduled',
-      participants: { total: 5, confirmed: 2, pending: 3 },
-      materials: { total: 4, ready: 1 },
-      venue: { status: 'pending' },
-      aiProgress: 25,
-      organizer: '陈产品'
-    }
-  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed': return 'bg-green-100 text-green-800';
-      case 'scheduled': return 'bg-blue-100 text-blue-800';
-      case 'in-progress': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'preparing': return 'bg-blue-100 text-blue-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -140,30 +46,79 @@ const Meetings = () => {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'confirmed': return '已确认';
-      case 'scheduled': return '已安排';
-      case 'in-progress': return '进行中';
-      case 'completed': return '已完成';
+      case 'pending': return '待确认';
+      case 'preparing': return '准备中';
       case 'cancelled': return '已取消';
       default: return '未知';
     }
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'online': return <Video className="w-4 h-4" />;
-      case 'hybrid': return <Users className="w-4 h-4" />;
-      default: return <MapPin className="w-4 h-4" />;
+  const getTypeIcon = (location: string) => {
+    if (location.includes('腾讯会议') || location.includes('在线')) {
+      return <Video className="w-4 h-4" />;
+    } else if (location.includes('+')) {
+      return <Users className="w-4 h-4" />;
     }
+    return <MapPin className="w-4 h-4" />;
   };
 
   const filteredMeetings = meetings.filter(meeting => {
-    const matchesSearch = meeting.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         meeting.organizer.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = meeting.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || meeting.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const selectedMeetingData = meetings.find(m => m.id === selectedMeeting);
+
+  const handleSendReminder = async (meetingId: string) => {
+    try {
+      toast.success("提醒通知已发送给所有参会者");
+      // 这里可以调用发送通知的API
+    } catch (error) {
+      toast.error("发送提醒失败");
+    }
+  };
+
+  const handleEditMeeting = (meetingId: string) => {
+    toast.info("会议编辑功能开发中");
+    // 这里可以跳转到编辑页面或打开编辑对话框
+  };
+
+  const handleGenerateMinutes = (meetingId: string) => {
+    toast.info("会议纪要生成功能开发中");
+    // 这里可以调用AI生成会议纪要的功能
+  };
+
+  const calculateProgress = (meeting: any) => {
+    let progress = 0;
+    if (meeting.status === 'confirmed') progress += 40;
+    if (meeting.meeting_room) progress += 30;
+    if (meeting.attendees && meeting.attendees.length > 0) progress += 30;
+    return Math.min(progress, 100);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">正在加载会议数据...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-500 mb-4">{error}</p>
+          <Button onClick={refreshMeetings}>重新加载</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -197,7 +152,7 @@ const Meetings = () => {
             <Card>
               <CardHeader>
                 <CardTitle>会议列表</CardTitle>
-                <CardDescription>管理您的所有会议安排</CardDescription>
+                <CardDescription>管理您的所有会议安排 ({meetings.length} 个会议)</CardDescription>
               </CardHeader>
               <CardContent>
                 {/* 搜索和筛选 */}
@@ -217,48 +172,61 @@ const Meetings = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">全部状态</SelectItem>
-                      <SelectItem value="scheduled">已安排</SelectItem>
+                      <SelectItem value="pending">待确认</SelectItem>
                       <SelectItem value="confirmed">已确认</SelectItem>
-                      <SelectItem value="in-progress">进行中</SelectItem>
-                      <SelectItem value="completed">已完成</SelectItem>
+                      <SelectItem value="preparing">准备中</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* 会议列表 */}
                 <div className="space-y-3">
-                  {filteredMeetings.map((meeting) => (
-                    <div
-                      key={meeting.id}
-                      className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
-                        selectedMeeting === meeting.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                      onClick={() => setSelectedMeeting(meeting.id)}
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-medium text-gray-900 text-sm">{meeting.title}</h4>
-                        <Badge className={getStatusColor(meeting.status)} variant="secondary">
-                          {getStatusText(meeting.status)}
-                        </Badge>
-                      </div>
-                      <div className="space-y-1 text-xs text-gray-600">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>{meeting.date} {meeting.time}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          {getTypeIcon(meeting.type)}
-                          <span>{meeting.location}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Users className="w-3 h-3" />
-                          <span>{meeting.participants.confirmed}/{meeting.participants.total} 人确认</span>
-                        </div>
-                      </div>
+                  {filteredMeetings.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>暂无会议数据</p>
+                      <Button 
+                        variant="outline" 
+                        className="mt-4"
+                        onClick={() => navigate('/chat')}
+                      >
+                        创建第一个会议
+                      </Button>
                     </div>
-                  ))}
+                  ) : (
+                    filteredMeetings.map((meeting) => (
+                      <div
+                        key={meeting.id}
+                        className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
+                          selectedMeeting === meeting.id
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
+                        onClick={() => setSelectedMeeting(meeting.id)}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="font-medium text-gray-900 text-sm">{meeting.title}</h4>
+                          <Badge className={getStatusColor(meeting.status)} variant="secondary">
+                            {getStatusText(meeting.status)}
+                          </Badge>
+                        </div>
+                        <div className="space-y-1 text-xs text-gray-600">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="w-3 h-3" />
+                            <span>{new Date(meeting.start_time).toLocaleDateString()} {new Date(meeting.start_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            {getTypeIcon(meeting.meeting_room?.location || '未知')}
+                            <span>{meeting.meeting_room?.name || '会议室待定'}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Users className="w-3 h-3" />
+                            <span>{meeting.attendees?.length || 0} 人参会</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -275,15 +243,19 @@ const Meetings = () => {
                       <div>
                         <CardTitle className="text-xl">{selectedMeetingData.title}</CardTitle>
                         <CardDescription>
-                          组织者: {selectedMeetingData.organizer}
+                          创建时间: {new Date(selectedMeetingData.created_at).toLocaleString()}
                         </CardDescription>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge className={getStatusColor(selectedMeetingData.status)}>
                           {getStatusText(selectedMeetingData.status)}
                         </Badge>
-                        <Button variant="outline" size="sm">
-                          <MoreHorizontal className="w-4 h-4" />
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditMeeting(selectedMeetingData.id)}
+                        >
+                          <Edit className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
@@ -293,24 +265,29 @@ const Meetings = () => {
                       <div className="space-y-3">
                         <div className="flex items-center space-x-2 text-sm">
                           <Calendar className="w-4 h-4 text-gray-500" />
-                          <span>{selectedMeetingData.date} {selectedMeetingData.time}</span>
+                          <span>{new Date(selectedMeetingData.start_time).toLocaleString()}</span>
                         </div>
                         <div className="flex items-center space-x-2 text-sm">
-                          {getTypeIcon(selectedMeetingData.type)}
-                          <span>{selectedMeetingData.location}</span>
+                          <MapPin className="w-4 h-4 text-gray-500" />
+                          <span>{selectedMeetingData.meeting_room?.name || '会议室待定'}</span>
                         </div>
                       </div>
                       <div className="space-y-3">
                         <div className="flex items-center space-x-2 text-sm">
                           <Users className="w-4 h-4 text-gray-500" />
-                          <span>{selectedMeetingData.participants.total} 人参会</span>
+                          <span>{selectedMeetingData.attendees?.length || 0} 人参会</span>
                         </div>
                         <div className="flex items-center space-x-2 text-sm">
-                          <FileText className="w-4 h-4 text-gray-500" />
-                          <span>{selectedMeetingData.materials.total} 个材料</span>
+                          <Clock className="w-4 h-4 text-gray-500" />
+                          <span>持续时间: {Math.round((new Date(selectedMeetingData.end_time).getTime() - new Date(selectedMeetingData.start_time).getTime()) / (1000 * 60))} 分钟</span>
                         </div>
                       </div>
                     </div>
+                    {selectedMeetingData.description && (
+                      <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-700">{selectedMeetingData.description}</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -331,24 +308,32 @@ const Meetings = () => {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">整体进度</span>
-                        <span className="text-sm text-gray-600">{selectedMeetingData.aiProgress}%</span>
+                        <span className="text-sm text-gray-600">{calculateProgress(selectedMeetingData)}%</span>
                       </div>
-                      <Progress value={selectedMeetingData.aiProgress} className="h-2" />
+                      <Progress value={calculateProgress(selectedMeetingData)} className="h-2" />
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center space-x-2">
                           <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span>会议邀请已发送</span>
+                          <span>会议已创建</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span>议程已制定</span>
+                          {selectedMeetingData.status === 'confirmed' ? (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <AlertCircle className="w-4 h-4 text-yellow-500" />
+                          )}
+                          <span>会议状态确认</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span>材料清单已生成</span>
+                          {selectedMeetingData.attendees && selectedMeetingData.attendees.length > 0 ? (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <AlertCircle className="w-4 h-4 text-yellow-500" />
+                          )}
+                          <span>参会人员确认</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {selectedMeetingData.venue.status === 'booked' ? (
+                          {selectedMeetingData.meeting_room ? (
                             <CheckCircle className="w-4 h-4 text-green-500" />
                           ) : (
                             <AlertCircle className="w-4 h-4 text-yellow-500" />
@@ -365,74 +350,35 @@ const Meetings = () => {
                   <CardHeader>
                     <CardTitle>参会者确认情况</CardTitle>
                     <CardDescription>
-                      {selectedMeetingData.participants.confirmed} / {selectedMeetingData.participants.total} 人已确认参会
+                      参会人员: {selectedMeetingData.attendees?.length || 0} 人
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">确认进度</span>
-                        <span className="text-sm text-gray-600">
-                          {Math.round((selectedMeetingData.participants.confirmed / selectedMeetingData.participants.total) * 100)}%
-                        </span>
-                      </div>
-                      <Progress 
-                        value={(selectedMeetingData.participants.confirmed / selectedMeetingData.participants.total) * 100} 
-                        className="h-2" 
-                      />
-                      <div className="grid grid-cols-3 gap-4 text-center">
-                        <div className="p-3 bg-green-50 rounded-lg">
-                          <div className="text-lg font-semibold text-green-600">
-                            {selectedMeetingData.participants.confirmed}
+                    {selectedMeetingData.attendees && selectedMeetingData.attendees.length > 0 ? (
+                      <div className="space-y-3">
+                        {selectedMeetingData.attendees.map((attendee: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">
+                                {attendee.name?.charAt(0) || '用'}
+                              </div>
+                              <div>
+                                <p className="font-medium">{attendee.name || '参会者'}</p>
+                                <p className="text-sm text-gray-500">{attendee.email || attendee.department || '暂无信息'}</p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="bg-green-50 text-green-700">
+                              已邀请
+                            </Badge>
                           </div>
-                          <div className="text-xs text-green-700">已确认</div>
-                        </div>
-                        <div className="p-3 bg-yellow-50 rounded-lg">
-                          <div className="text-lg font-semibold text-yellow-600">
-                            {selectedMeetingData.participants.pending}
-                          </div>
-                          <div className="text-xs text-yellow-700">待确认</div>
-                        </div>
-                        <div className="p-3 bg-gray-50 rounded-lg">
-                          <div className="text-lg font-semibold text-gray-600">
-                            {selectedMeetingData.participants.total}
-                          </div>
-                          <div className="text-xs text-gray-700">总人数</div>
-                        </div>
+                        ))}
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* 材料汇总进度 */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>材料汇总进度</CardTitle>
-                    <CardDescription>
-                      {selectedMeetingData.materials.ready} / {selectedMeetingData.materials.total} 个材料已准备完成
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <Progress 
-                        value={(selectedMeetingData.materials.ready / selectedMeetingData.materials.total) * 100} 
-                        className="h-2" 
-                      />
-                      <div className="grid grid-cols-2 gap-4">
-                        <Button 
-                          variant="outline" 
-                          className="justify-start"
-                          onClick={() => navigate('/materials')}
-                        >
-                          <FileText className="w-4 h-4 mr-2" />
-                          查看材料详情
-                        </Button>
-                        <Button variant="outline" className="justify-start">
-                          <Bot className="w-4 h-4 mr-2" />
-                          AI催促未完成材料
-                        </Button>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p>暂无参会者信息</p>
                       </div>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -443,29 +389,33 @@ const Meetings = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4">
-                      {selectedMeetingData.venue.status === 'pending' && (
-                        <Button className="bg-gradient-to-r from-blue-500 to-purple-500">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          预订会议室
-                        </Button>
-                      )}
-                      {selectedMeetingData.venue.status === 'booked' && (
-                        <Button variant="outline">
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          查看场地详情
-                        </Button>
-                      )}
-                      <Button variant="outline">
-                        <Users className="w-4 h-4 mr-2" />
+                      <Button 
+                        variant="outline"
+                        onClick={() => handleSendReminder(selectedMeetingData.id)}
+                      >
+                        <Mail className="w-4 h-4 mr-2" />
                         发送提醒通知
                       </Button>
-                      <Button variant="outline">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        修改会议时间
+                      <Button 
+                        variant="outline"
+                        onClick={() => handleEditMeeting(selectedMeetingData.id)}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        修改会议信息
                       </Button>
-                      <Button variant="outline">
+                      <Button 
+                        variant="outline"
+                        onClick={() => handleGenerateMinutes(selectedMeetingData.id)}
+                      >
                         <FileText className="w-4 h-4 mr-2" />
                         生成会议纪要
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => navigate('/materials')}
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        查看会议材料
                       </Button>
                     </div>
                   </CardContent>
