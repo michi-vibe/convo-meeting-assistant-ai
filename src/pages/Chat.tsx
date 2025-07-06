@@ -21,6 +21,13 @@ interface Message {
     action: string;
     variant?: 'default' | 'outline';
   }>;
+  suggestedRooms?: Array<{
+    id: number;
+    name: string;
+    location: string;
+    capacity: number;
+    equipment: string;
+  }>;
 }
 
 const Chat = () => {
@@ -158,6 +165,7 @@ const Chat = () => {
 
       const aiResponse = data.response || '抱歉，我现在无法处理您的请求。';
       const actions = data.actions || [];
+      const suggestedRooms = data.suggestedRooms || [];
 
       const newMessage: Message = {
         id: Date.now().toString(),
@@ -165,7 +173,8 @@ const Chat = () => {
         content: aiResponse,
         timestamp: new Date(),
         status: 'sent',
-        actions: actions
+        actions: actions,
+        suggestedRooms: suggestedRooms.length > 0 ? suggestedRooms : undefined
       };
 
       setMessages(prev => [...prev, newMessage]);
@@ -309,42 +318,73 @@ const Chat = () => {
                         )}
                       </div>
 
-                      {/* 消息内容 */}
-                      <div className="flex-1">
-                        <div className={`rounded-2xl px-4 py-3 ${
-                          message.type === 'user'
-                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                            : 'bg-gray-100 text-gray-900'
-                        }`}>
-                          <div className="whitespace-pre-wrap">{message.content}</div>
-                        </div>
-                        
-                        {/* 操作按钮 */}
-                        {message.actions && message.actions.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {message.actions.map((action, index) => (
-                              <Button
-                                key={index}
-                                variant={action.variant || 'default'}
-                                size="sm"
-                                onClick={() => handleAction(action.action)}
-                                className="text-sm"
-                              >
-                                {action.label}
-                              </Button>
-                            ))}
+                        {/* 消息内容 */}
+                        <div className="flex-1">
+                          <div className={`rounded-2xl px-4 py-3 ${
+                            message.type === 'user'
+                              ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                              : 'bg-gray-100 text-gray-900'
+                          }`}>
+                            <div className="whitespace-pre-wrap">{message.content}</div>
                           </div>
-                        )}
+                          
+                          {/* 建议的会议室信息 */}
+                          {message.suggestedRooms && message.suggestedRooms.length > 0 && (
+                            <div className="mt-3 space-y-2">
+                              <div className="text-sm font-medium text-gray-700">推荐会议室：</div>
+                              {message.suggestedRooms.map((room) => (
+                                <Card key={room.id} className="p-3 bg-blue-50 border-blue-200">
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <div className="font-medium text-gray-900">{room.name}</div>
+                                      <div className="text-sm text-gray-600">
+                                        📍 {room.location} • 👥 容纳{room.capacity}人
+                                      </div>
+                                      {room.equipment && (
+                                        <div className="text-xs text-gray-500 mt-1">
+                                          🔧 {room.equipment}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <Button 
+                                      size="sm" 
+                                      onClick={() => handleAction('book')}
+                                      className="ml-2"
+                                    >
+                                      预订
+                                    </Button>
+                                  </div>
+                                </Card>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* 操作按钮 */}
+                          {message.actions && message.actions.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-3">
+                              {message.actions.map((action, index) => (
+                                <Button
+                                  key={index}
+                                  variant={action.variant || 'default'}
+                                  size="sm"
+                                  onClick={() => handleAction(action.action)}
+                                  className="text-sm"
+                                >
+                                  {action.label}
+                                </Button>
+                              ))}
+                            </div>
+                          )}
 
-                        {/* 时间戳和状态 */}
-                        <div className={`flex items-center space-x-2 mt-2 text-xs text-gray-500 ${
-                          message.type === 'user' ? 'justify-end' : 'justify-start'
-                        }`}>
-                          <span>{message.timestamp.toLocaleTimeString()}</span>
-                          {message.status === 'confirmed' && <CheckCircle className="w-3 h-3 text-green-500" />}
-                          {message.status === 'sending' && <Clock className="w-3 h-3" />}
+                          {/* 时间戳和状态 */}
+                          <div className={`flex items-center space-x-2 mt-2 text-xs text-gray-500 ${
+                            message.type === 'user' ? 'justify-end' : 'justify-start'
+                          }`}>
+                            <span>{message.timestamp.toLocaleTimeString()}</span>
+                            {message.status === 'confirmed' && <CheckCircle className="w-3 h-3 text-green-500" />}
+                            {message.status === 'sending' && <Clock className="w-3 h-3" />}
+                          </div>
                         </div>
-                      </div>
                     </div>
                   </div>
                 ))}

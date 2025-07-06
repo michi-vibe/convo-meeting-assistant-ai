@@ -74,6 +74,66 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_arrangements: {
+        Row: {
+          attendees: Json | null
+          created_at: string
+          description: string | null
+          end_time: string
+          id: string
+          meeting_room_id: number | null
+          session_id: string | null
+          start_time: string
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attendees?: Json | null
+          created_at?: string
+          description?: string | null
+          end_time: string
+          id?: string
+          meeting_room_id?: number | null
+          session_id?: string | null
+          start_time: string
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attendees?: Json | null
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          id?: string
+          meeting_room_id?: number | null
+          session_id?: string | null
+          start_time?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_arrangements_meeting_room_id_fkey"
+            columns: ["meeting_room_id"]
+            isOneToOne: false
+            referencedRelation: "oa_meetting"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_arrangements_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       oa_meetting: {
         Row: {
           capacity: number | null
