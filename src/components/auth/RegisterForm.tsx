@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * z from "zod";
+import * as z from "zod";
 
 const registerSchema = z.object({
   username: z.string().min(2, "用户名至少需要2个字符"),
