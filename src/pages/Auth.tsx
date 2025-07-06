@@ -21,12 +21,9 @@ const loginSchema = z.object({
 
 const registerSchema = z.object({
   username: z.string().min(2, "用户名至少需要2个字符"),
-  phone: z.string().regex(/^1[3-9]\d{9}$/, "请输入有效的手机号码"),
   email: z.string().email("请输入有效的邮箱地址"),
   password: z.string().min(6, "密码至少需要6位字符"),
   confirmPassword: z.string(),
-  displayName: z.string().min(2, "显示名称至少需要2个字符"),
-  agree: z.boolean().refine(val => val === true, "请同意相关协议"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "两次输入的密码不一致",
   path: ["confirmPassword"],
@@ -60,12 +57,9 @@ const Auth = () => {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       username: "",
-      phone: "",
       email: "",
       password: "",
       confirmPassword: "",
-      displayName: "",
-      agree: false,
     },
   });
 
@@ -108,8 +102,6 @@ const Auth = () => {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             username: values.username,
-            phone: values.phone,
-            display_name: values.displayName,
           }
         }
       });
@@ -279,34 +271,6 @@ const Auth = () => {
 
                   <FormField
                     control={registerForm.control}
-                    name="displayName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>显示名称</FormLabel>
-                        <FormControl>
-                          <Input placeholder="请输入显示名称" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={registerForm.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>手机号码</FormLabel>
-                        <FormControl>
-                          <Input placeholder="请输入手机号码" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={registerForm.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
@@ -380,46 +344,6 @@ const Auth = () => {
                             </Button>
                           </div>
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={registerForm.control}
-                    name="agree"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <input
-                            type="checkbox"
-                            checked={field.value}
-                            onChange={field.onChange}
-                            className="rounded border-gray-300"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel className="text-sm font-normal">
-                            阅读并同意
-                            <Button
-                              type="button"
-                              variant="link"
-                              className="px-1 h-auto text-blue-600"
-                              onClick={() => toast.info("服务协议和隐私政策即将上线")}
-                            >
-                              《服务协议》
-                            </Button>
-                            和
-                            <Button
-                              type="button"
-                              variant="link"
-                              className="px-1 h-auto text-blue-600"
-                              onClick={() => toast.info("服务协议和隐私政策即将上线")}
-                            >
-                              《隐私政策》
-                            </Button>
-                          </FormLabel>
-                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
