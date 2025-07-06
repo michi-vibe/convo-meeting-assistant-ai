@@ -269,7 +269,7 @@ const Chat = () => {
                 </div>
               </div>
             </div>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => navigate('/chat-history')}>
               会议历史
             </Button>
           </div>

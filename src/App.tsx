@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Chat from "./pages/Chat";
+import ChatHistory from "./pages/ChatHistory";
 import Materials from "./pages/Materials";
 import Meetings from "./pages/Meetings";
 import Profile from "./pages/Profile";
@@ -34,6 +35,11 @@ const App = () => (
             <Route path="/chat" element={
               <ProtectedRoute>
                 <Chat />
+              </ProtectedRoute>
+            } />
+            <Route path="/chat-history" element={
+              <ProtectedRoute>
+                <ChatHistory />
               </ProtectedRoute>
             } />
             <Route path="/materials" element={
