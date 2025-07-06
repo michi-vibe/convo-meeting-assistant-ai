@@ -9,6 +9,84 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      oa_meetting: {
+        Row: {
+          capacity: number | null
+          created_at: string | null
+          equipment: string | null
+          id: number
+          location: string | null
+          name: string
+          remark: string | null
+          status: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string | null
+          equipment?: string | null
+          id?: number
+          location?: string | null
+          name: string
+          remark?: string | null
+          status?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string | null
+          equipment?: string | null
+          id?: number
+          location?: string | null
+          name?: string
+          remark?: string | null
+          status?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      oa_user: {
+        Row: {
+          created_at: string | null
+          department: string | null
+          email: string | null
+          id: number
+          password: string
+          phone: string | null
+          real_name: string | null
+          role: string | null
+          status: number | null
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          id?: number
+          password: string
+          phone?: string | null
+          real_name?: string | null
+          role?: string | null
+          status?: number | null
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          id?: number
+          password?: string
+          phone?: string | null
+          real_name?: string | null
+          role?: string | null
+          status?: number | null
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

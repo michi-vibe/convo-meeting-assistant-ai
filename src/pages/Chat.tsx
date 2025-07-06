@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -44,62 +46,20 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
-  const simulateAIResponse = (userMessage: string) => {
+  const getAIResponse = async (userMessage: string) => {
     setIsTyping(true);
     
-    setTimeout(() => {
-      let aiResponse = '';
-      let actions: Array<{label: string; action: string; variant?: 'default' | 'outline'}> = [];
+    try {
+      const { data, error } = await supabase.functions.invoke('qwen-chat', {
+        body: { message: userMessage }
+      });
 
-      if (userMessage.includes('项目') || userMessage.includes('讨论')) {
-        aiResponse = `我了解您想要安排一个项目讨论会议。基于您的需求，我建议：
-
-📅 **会议时间**: 本周三下午2:00-4:00
-👥 **参会人员**: 项目组核心成员(约8人)
-📋 **会议议程**: 
-  1. 项目进度汇报(30分钟)
-  2. 问题讨论与解决方案(60分钟)
-  3. 下阶段任务分配(30分钟)
-
-📝 **需要准备的材料**:
-  - 项目进度报告
-  - 问题清单及优先级
-  - 资源分配表
-
-请确认这个安排是否符合您的需求？`;
-
-        actions = [
-          { label: '确认会议安排', action: 'confirm', variant: 'default' },
-          { label: '修改时间', action: 'modify', variant: 'outline' },
-          { label: '调整议程', action: 'adjust', variant: 'outline' }
-        ];
-      } else if (userMessage.includes('确认')) {
-        aiResponse = `✅ 太好了！我已经确认了您的会议安排。现在我将：
-
-1. **发送会议邀请给参会者** - 包含会议详情和议程
-2. **为参会者分析准备材料** - 每个人需要准备的具体内容
-3. **提醒您预订会议室** - 我建议预订A会议室(可容纳10人)
-4. **协助OA系统预订** - 自动填写预订信息
-
-参会者的数字分身将帮助他们：
-- 添加会议到个人日程
-- 准备相关材料
-- 确认参会状态`;
-
-        actions = [
-          { label: '查看会议详情', action: 'details', variant: 'default' },
-          { label: '现在预订会议室', action: 'book', variant: 'default' }
-        ];
-      } else {
-        aiResponse = `我明白了。请告诉我更多关于这个会议的信息：
-
-🎯 **会议目的**: 您希望通过这次会议达成什么目标？
-👥 **参会人员**: 大概有多少人参加？都是哪些部门的同事？
-⏰ **时间偏好**: 您希望什么时候举行？有特殊的时间要求吗？
-📍 **会议形式**: 线下会议、线上会议还是混合模式？
-
-请提供这些信息，我会为您制定详细的会议方案。`;
+      if (error) {
+        throw error;
       }
+
+      const aiResponse = data.response || '抱歉，我现在无法处理您的请求。';
+      const actions = data.actions || [];
 
       const newMessage: Message = {
         id: Date.now().toString(),
@@ -111,8 +71,24 @@ const Chat = () => {
       };
 
       setMessages(prev => [...prev, newMessage]);
+      
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      toast.error('AI响应失败，请重试');
+      
+      // 显示错误消息
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        type: 'ai',
+        content: '抱歉，我现在无法处理您的请求。请检查网络连接或稍后重试。',
+        timestamp: new Date(),
+        status: 'sent'
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const sendMessage = () => {
@@ -126,7 +102,7 @@ const Chat = () => {
       };
 
       setMessages(prev => [...prev, newMessage]);
-      simulateAIResponse(inputValue.trim());
+      getAIResponse(inputValue.trim());
       setInputValue('');
     }
   };
@@ -149,7 +125,7 @@ const Chat = () => {
           status: 'sent'
         };
         setMessages(prev => [...prev, confirmMessage]);
-        simulateAIResponse('确认');
+        getAIResponse('确认');
         break;
       case 'details':
         navigate('/meetings');
