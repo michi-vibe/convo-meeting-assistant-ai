@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { ArrowUp, Mic, Paperclip, Bot, User, CheckCircle, Clock, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,26 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-
-interface Message {
-  id: string;
-  type: 'user' | 'ai';
-  content: string;
-  timestamp: Date;
-  status?: 'sending' | 'sent' | 'confirmed';
-  actions?: Array<{
-    label: string;
-    action: string;
-    variant?: 'default' | 'outline';
-  }>;
-  suggestedRooms?: Array<{
-    id: number;
-    name: string;
-    location: string;
-    capacity: number;
-    equipment: string;
-  }>;
-}
+import { Message } from "@/types/chat";
 
 const Chat = () => {
   const navigate = useNavigate();
@@ -156,7 +136,10 @@ const Chat = () => {
     
     try {
       const { data, error } = await supabase.functions.invoke('qwen-chat', {
-        body: { message: userMessage }
+        body: { 
+          message: userMessage,
+          sessionId: currentSessionId 
+        }
       });
 
       if (error) {
@@ -166,6 +149,8 @@ const Chat = () => {
       const aiResponse = data.response || '抱歉，我现在无法处理您的请求。';
       const actions = data.actions || [];
       const suggestedRooms = data.suggestedRooms || [];
+      const suggestedUsers = data.suggestedUsers || [];
+      const userContext = data.userContext || {};
 
       const newMessage: Message = {
         id: Date.now().toString(),
@@ -174,7 +159,9 @@ const Chat = () => {
         timestamp: new Date(),
         status: 'sent',
         actions: actions,
-        suggestedRooms: suggestedRooms.length > 0 ? suggestedRooms : undefined
+        suggestedRooms: suggestedRooms.length > 0 ? suggestedRooms : undefined,
+        suggestedUsers: suggestedUsers.length > 0 ? suggestedUsers : undefined,
+        userContext
       };
 
       setMessages(prev => [...prev, newMessage]);
@@ -331,7 +318,7 @@ const Chat = () => {
                   <h1 className="font-semibold text-gray-900">数字分身助手</h1>
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <span className="text-sm text-gray-500">在线</span>
+                    <span className="text-sm text-gray-500">在线 • 支持多轮对话</span>
                   </div>
                 </div>
               </div>
@@ -376,73 +363,87 @@ const Chat = () => {
                         )}
                       </div>
 
-                        {/* 消息内容 */}
-                        <div className="flex-1">
-                          <div className={`rounded-2xl px-4 py-3 ${
-                            message.type === 'user'
-                              ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                              : 'bg-gray-100 text-gray-900'
-                          }`}>
-                            <div className="whitespace-pre-wrap">{message.content}</div>
-                          </div>
-                          
-                          {/* 建议的会议室信息 */}
-                          {message.suggestedRooms && message.suggestedRooms.length > 0 && (
-                            <div className="mt-3 space-y-2">
-                              <div className="text-sm font-medium text-gray-700">推荐会议室：</div>
-                              {message.suggestedRooms.map((room) => (
-                                <Card key={room.id} className="p-3 bg-blue-50 border-blue-200">
-                                  <div className="flex items-center justify-between">
-                                    <div>
-                                      <div className="font-medium text-gray-900">{room.name}</div>
-                                      <div className="text-sm text-gray-600">
-                                        📍 {room.location} • 👥 容纳{room.capacity}人
-                                      </div>
-                                      {room.equipment && (
-                                        <div className="text-xs text-gray-500 mt-1">
-                                          🔧 {room.equipment}
-                                        </div>
-                                      )}
-                                    </div>
-                                     <Button 
-                                       size="sm" 
-                                       onClick={() => handleAction('book', room.id)}
-                                       className="ml-2"
-                                     >
-                                       预订
-                                     </Button>
-                                  </div>
-                                </Card>
-                              ))}
-                            </div>
-                          )}
-                          
-                          {/* 操作按钮 */}
-                          {message.actions && message.actions.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-3">
-                              {message.actions.map((action, index) => (
-                                <Button
-                                  key={index}
-                                  variant={action.variant || 'default'}
-                                  size="sm"
-                                  onClick={() => handleAction(action.action)}
-                                  className="text-sm"
-                                >
-                                  {action.label}
-                                </Button>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* 时间戳和状态 */}
-                          <div className={`flex items-center space-x-2 mt-2 text-xs text-gray-500 ${
-                            message.type === 'user' ? 'justify-end' : 'justify-start'
-                          }`}>
-                            <span>{message.timestamp.toLocaleTimeString()}</span>
-                            {message.status === 'confirmed' && <CheckCircle className="w-3 h-3 text-green-500" />}
-                            {message.status === 'sending' && <Clock className="w-3 h-3" />}
-                          </div>
+                      {/* 消息内容 */}
+                      <div className="flex-1">
+                        <div className={`rounded-2xl px-4 py-3 ${
+                          message.type === 'user'
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                            : 'bg-gray-100 text-gray-900'
+                        }`}>
+                          <div className="whitespace-pre-wrap">{message.content}</div>
                         </div>
+                        
+                        {/* 建议的用户信息 */}
+                        {message.suggestedUsers && message.suggestedUsers.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            <div className="text-sm font-medium text-gray-700">相关人员：</div>
+                            <div className="flex flex-wrap gap-2">
+                              {message.suggestedUsers.map((user) => (
+                                <Badge key={user.id} variant="outline" className="bg-green-50 border-green-200">
+                                  {user.real_name || user.username} ({user.department})
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* 建议的会议室信息 */}
+                        {message.suggestedRooms && message.suggestedRooms.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            <div className="text-sm font-medium text-gray-700">推荐会议室：</div>
+                            {message.suggestedRooms.map((room) => (
+                              <Card key={room.id} className="p-3 bg-blue-50 border-blue-200">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <div className="font-medium text-gray-900">{room.name}</div>
+                                    <div className="text-sm text-gray-600">
+                                      📍 {room.location} • 👥 容纳{room.capacity}人
+                                    </div>
+                                    {room.equipment && (
+                                      <div className="text-xs text-gray-500 mt-1">
+                                        🔧 {room.equipment}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <Button 
+                                    size="sm" 
+                                    onClick={() => handleAction('book', room.id)}
+                                    className="ml-2"
+                                  >
+                                    预订
+                                  </Button>
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* 操作按钮 */}
+                        {message.actions && message.actions.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {message.actions.map((action, index) => (
+                              <Button
+                                key={index}
+                                variant={action.variant || 'default'}
+                                size="sm"
+                                onClick={() => handleAction(action.action)}
+                                className="text-sm"
+                              >
+                                {action.label}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* 时间戳和状态 */}
+                        <div className={`flex items-center space-x-2 mt-2 text-xs text-gray-500 ${
+                          message.type === 'user' ? 'justify-end' : 'justify-start'
+                        }`}>
+                          <span>{message.timestamp.toLocaleTimeString()}</span>
+                          {message.status === 'confirmed' && <CheckCircle className="w-3 h-3 text-green-500" />}
+                          {message.status === 'sending' && <Clock className="w-3 h-3" />}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -475,7 +476,7 @@ const Chat = () => {
               <div className="flex-1 relative">
                 <Textarea
                   ref={textareaRef}
-                  placeholder="请描述您想要安排的会议..."
+                  placeholder="请描述您想要安排的会议，我会记住我们的对话历史..."
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
@@ -506,7 +507,7 @@ const Chat = () => {
             
             {/* 快捷建议 */}
             <div className="flex flex-wrap gap-2 mt-3">
-              {['项目启动会议', '团队周会', '季度总结会议', '技术评审会'].map((suggestion) => (
+              {['项目启动会议', '团队周会', '季度总结会议', '技术评审会', '客户拜访计划'].map((suggestion) => (
                 <Button
                   key={suggestion}
                   variant="outline"
