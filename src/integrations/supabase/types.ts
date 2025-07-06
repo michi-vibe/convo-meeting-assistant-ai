@@ -333,7 +333,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_full_info: {
+        Args: { user_uuid: string }
+        Returns: {
+          user_id: string
+          auth_email: string
+          username: string
+          real_name: string
+          department: string
+          role: string
+          phone: string
+          display_name: string
+          avatar_url: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
