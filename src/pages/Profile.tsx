@@ -1,4 +1,5 @@
 
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,23 +65,18 @@ const Profile = () => {
     });
   };
 
-  const handleGoBack = () => {
-    navigate(-1); // 返回上一个页面
-  };
-
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
             <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleGoBack}
-              className="flex items-center gap-2"
+              variant="ghost" 
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-2"
             >
-              <ArrowLeft className="h-4 w-4" />
-              返回
+              <ArrowLeft className="w-4 h-4" />
+              <span>返回首页</span>
             </Button>
             <h1 className="text-3xl font-bold">个人资料</h1>
           </div>
@@ -107,13 +103,12 @@ const Profile = () => {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleGoBack}
-              className="flex items-center gap-2"
+              variant="ghost" 
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-2"
             >
-              <ArrowLeft className="h-4 w-4" />
-              返回
+              <ArrowLeft className="w-4 h-4" />
+              <span>返回首页</span>
             </Button>
             <h1 className="text-3xl font-bold">个人资料</h1>
           </div>
@@ -235,3 +230,4 @@ const Profile = () => {
 };
 
 export default Profile;
+
