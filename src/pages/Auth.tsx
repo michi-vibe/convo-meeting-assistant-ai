@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, Eye, EyeOff } from "lucide-react";
@@ -61,6 +60,7 @@ const Auth = () => {
       password: "",
       confirmPassword: "",
     },
+    mode: "onChange",
   });
 
   const onLogin = async (values: z.infer<typeof loginSchema>) => {
@@ -274,10 +274,8 @@ const Auth = () => {
                             placeholder="请输入用户名" 
                             type="text"
                             autoComplete="username"
+                            {...field}
                             value={field.value || ""}
-                            onChange={(e) => field.onChange(e.target.value)}
-                            onBlur={field.onBlur}
-                            name="username"
                             disabled={isLoading}
                           />
                         </FormControl>
@@ -297,10 +295,8 @@ const Auth = () => {
                             placeholder="请输入邮箱地址" 
                             type="email" 
                             autoComplete="email"
+                            {...field}
                             value={field.value || ""}
-                            onChange={(e) => field.onChange(e.target.value)}
-                            onBlur={field.onBlur}
-                            name="email"
                             disabled={isLoading}
                           />
                         </FormControl>
@@ -321,10 +317,8 @@ const Auth = () => {
                               placeholder="请输入密码（至少6位）" 
                               type={showPassword ? "text" : "password"}
                               autoComplete="new-password"
+                              {...field}
                               value={field.value || ""}
-                              onChange={(e) => field.onChange(e.target.value)}
-                              onBlur={field.onBlur}
-                              name="password"
                               disabled={isLoading}
                             />
                             <Button
@@ -359,10 +353,8 @@ const Auth = () => {
                               placeholder="请再次输入密码" 
                               type={showConfirmPassword ? "text" : "password"}
                               autoComplete="new-password"
+                              {...field}
                               value={field.value || ""}
-                              onChange={(e) => field.onChange(e.target.value)}
-                              onBlur={field.onBlur}
-                              name="confirmPassword"
                               disabled={isLoading}
                             />
                             <Button
