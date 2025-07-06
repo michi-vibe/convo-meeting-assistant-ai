@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   MessageSquare, 
@@ -8,16 +7,31 @@ import {
   Clock, 
   CheckCircle,
   Plus,
-  Bell
+  Bell,
+  LogOut,
+  User
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [notifications] = useState(3);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("退出登录成功");
+      navigate('/auth');
+    } catch (error) {
+      toast.error("退出登录失败");
+    }
+  };
 
   const stats = [
     {
@@ -150,7 +164,22 @@ const Index = () => {
                   </Badge>
                 )}
               </Button>
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+              
+              {/* 用户菜单 */}
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 text-sm text-gray-700">
+                  <User className="w-4 h-4" />
+                  <span>{user?.email}</span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="text-gray-600 hover:text-red-600"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
