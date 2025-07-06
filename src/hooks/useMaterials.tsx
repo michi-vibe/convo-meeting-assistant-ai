@@ -81,12 +81,21 @@ export const useMaterials = (meetingId?: string) => {
 
   const createMaterial = async (meetingId: string, material: Partial<MeetingMaterial>) => {
     try {
+      // 确保必需字段存在
+      const materialData = {
+        meeting_id: meetingId,
+        name: material.name || '新材料',
+        type: material.type || '文档',
+        status: material.status,
+        assigned_to: material.assigned_to,
+        due_date: material.due_date,
+        description: material.description,
+        ai_generated: material.ai_generated
+      };
+
       const { error } = await supabase
         .from('meeting_materials')
-        .insert({
-          meeting_id: meetingId,
-          ...material
-        });
+        .insert(materialData);
 
       if (error) throw error;
       

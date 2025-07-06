@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuHeader,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -49,7 +48,7 @@ export const NotificationDropdown = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 bg-white border shadow-lg">
-        <DropdownMenuHeader className="px-4 py-3 border-b">
+        <div className="px-4 py-3 border-b">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-gray-900">通知</h3>
             {unreadCount > 0 && (
@@ -64,7 +63,7 @@ export const NotificationDropdown = () => {
               </Button>
             )}
           </div>
-        </DropdownMenuHeader>
+        </div>
         
         <ScrollArea className="max-h-96">
           {notifications.length === 0 ? (

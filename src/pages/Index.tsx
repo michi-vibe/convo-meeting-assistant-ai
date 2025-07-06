@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   MessageSquare, 
@@ -10,7 +11,8 @@ import {
   Bell,
   LogOut,
   User,
-  MapPin
+  MapPin,
+  Bot
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,6 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { stats, recentMeetings, loading } = useMeetings();
-  const [notifications] = useState(3);
 
   const handleSignOut = async () => {
     try {
@@ -146,7 +147,7 @@ const Index = () => {
             
             <div className="flex items-center space-x-4">
               <NotificationDropdown />
-              <UserMenu onSignOut={signOut} />
+              <UserMenu />
             </div>
           </div>
         </div>
