@@ -176,13 +176,13 @@ const ChatHistory = () => {
           {/* 会话列表 */}
           <div className="lg:col-span-1">
             <Card className="h-full flex flex-col">
-              <CardHeader className="flex-shrink-0">
+              <CardHeader className="flex-shrink-0 pb-4">
                 <CardTitle className="flex items-center space-x-2">
                   <Calendar className="w-5 h-5" />
                   <span>聊天会话</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 p-0 min-h-0">
+              <CardContent className="flex-1 p-0 overflow-hidden">
                 {loading ? (
                   <div className="p-6 text-center h-full flex items-center justify-center">
                     <div className="text-center">
@@ -204,7 +204,7 @@ const ChatHistory = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="h-full overflow-y-auto">
+                  <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                     <div className="divide-y divide-gray-100">
                       {sessions.map((session) => (
                         <div
@@ -241,7 +241,7 @@ const ChatHistory = () => {
           {/* 消息详情 */}
           <div className="lg:col-span-2">
             <Card className="h-full flex flex-col">
-              <CardHeader className="flex-shrink-0">
+              <CardHeader className="flex-shrink-0 pb-4">
                 <CardTitle className="flex items-center space-x-2">
                   <MessageSquare className="w-5 h-5" />
                   <span>
@@ -249,7 +249,7 @@ const ChatHistory = () => {
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 p-4 min-h-0">
+              <CardContent className="flex-1 p-4 overflow-hidden">
                 {!selectedSession ? (
                   <div className="h-full flex items-center justify-center text-gray-500">
                     <div className="text-center">
@@ -265,7 +265,7 @@ const ChatHistory = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="h-full overflow-y-auto space-y-4 pr-2 animate-fade-in">
+                  <div className="h-full overflow-y-auto space-y-4 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                     {messages.map((message, index) => (
                       <div
                         key={message.id}
