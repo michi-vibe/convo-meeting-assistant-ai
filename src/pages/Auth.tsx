@@ -272,11 +272,13 @@ const Auth = () => {
                         <FormControl>
                           <Input 
                             placeholder="请输入用户名" 
-                            value={field.value}
-                            onChange={field.onChange}
+                            type="text"
+                            autoComplete="username"
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(e.target.value)}
                             onBlur={field.onBlur}
-                            name={field.name}
-                            disabled={field.disabled}
+                            name="username"
+                            disabled={isLoading}
                           />
                         </FormControl>
                         <FormMessage />
@@ -294,11 +296,12 @@ const Auth = () => {
                           <Input 
                             placeholder="请输入邮箱地址" 
                             type="email" 
-                            value={field.value}
-                            onChange={field.onChange}
+                            autoComplete="email"
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(e.target.value)}
                             onBlur={field.onBlur}
-                            name={field.name}
-                            disabled={field.disabled}
+                            name="email"
+                            disabled={isLoading}
                           />
                         </FormControl>
                         <FormMessage />
@@ -317,11 +320,12 @@ const Auth = () => {
                             <Input 
                               placeholder="请输入密码（至少6位）" 
                               type={showPassword ? "text" : "password"}
-                              value={field.value}
-                              onChange={field.onChange}
+                              autoComplete="new-password"
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value)}
                               onBlur={field.onBlur}
-                              name={field.name}
-                              disabled={field.disabled}
+                              name="password"
+                              disabled={isLoading}
                             />
                             <Button
                               type="button"
@@ -354,11 +358,12 @@ const Auth = () => {
                             <Input 
                               placeholder="请再次输入密码" 
                               type={showConfirmPassword ? "text" : "password"}
-                              value={field.value}
-                              onChange={field.onChange}
+                              autoComplete="new-password"
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value)}
                               onBlur={field.onBlur}
-                              name={field.name}
-                              disabled={field.disabled}
+                              name="confirmPassword"
+                              disabled={isLoading}
                             />
                             <Button
                               type="button"
