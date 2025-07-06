@@ -172,17 +172,17 @@ const ChatHistory = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-160px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: 'calc(100vh - 200px)' }}>
           {/* 会话列表 */}
-          <div className="lg:col-span-1 flex flex-col">
-            <Card className="flex-1 flex flex-col">
+          <div className="lg:col-span-1">
+            <Card className="h-full flex flex-col">
               <CardHeader className="flex-shrink-0">
                 <CardTitle className="flex items-center space-x-2">
                   <Calendar className="w-5 h-5" />
                   <span>聊天会话</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 p-0 overflow-hidden">
+              <CardContent className="flex-1 p-0 min-h-0">
                 {loading ? (
                   <div className="p-6 text-center h-full flex items-center justify-center">
                     <div className="text-center">
@@ -239,8 +239,8 @@ const ChatHistory = () => {
           </div>
 
           {/* 消息详情 */}
-          <div className="lg:col-span-2 flex flex-col">
-            <Card className="flex-1 flex flex-col">
+          <div className="lg:col-span-2">
+            <Card className="h-full flex flex-col">
               <CardHeader className="flex-shrink-0">
                 <CardTitle className="flex items-center space-x-2">
                   <MessageSquare className="w-5 h-5" />
@@ -249,7 +249,7 @@ const ChatHistory = () => {
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 p-4 overflow-hidden">
+              <CardContent className="flex-1 p-4 min-h-0">
                 {!selectedSession ? (
                   <div className="h-full flex items-center justify-center text-gray-500">
                     <div className="text-center">
