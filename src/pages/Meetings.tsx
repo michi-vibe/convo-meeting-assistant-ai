@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Calendar, 
@@ -25,6 +24,7 @@ import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { useMeetings } from "@/hooks/useMeetings";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Meetings = () => {
   const navigate = useNavigate();
@@ -72,9 +72,33 @@ const Meetings = () => {
 
   const handleSendReminder = async (meetingId: string) => {
     try {
-      toast.success("提醒通知已发送给所有参会者");
-      // 这里可以调用发送通知的API
+      const meeting = meetings.find(m => m.id === meetingId);
+      if (!meeting) return;
+
+      // 从参会者信息中提取邮箱
+      const attendeeEmails = meeting.attendees?.map((attendee: any) => attendee.email).filter(Boolean) || [];
+      
+      if (attendeeEmails.length === 0) {
+        toast.error("暂无参会者邮箱信息");
+        return;
+      }
+
+      // 调用边缘函数发送通知
+      const { data, error } = await supabase.functions.invoke('send-meeting-notification', {
+        body: {
+          meetingId: meeting.id,
+          attendeeEmails,
+          meetingTitle: meeting.title,
+          meetingTime: meeting.start_time,
+          organizerName: '会议组织者'
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(`提醒通知已发送给 ${attendeeEmails.length} 位参会者`);
     } catch (error) {
+      console.error('发送提醒失败:', error);
       toast.error("发送提醒失败");
     }
   };

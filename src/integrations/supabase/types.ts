@@ -134,6 +134,89 @@ export type Database = {
           },
         ]
       }
+      meeting_materials: {
+        Row: {
+          ai_generated: boolean | null
+          assigned_to: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          meeting_id: string | null
+          name: string
+          status: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          ai_generated?: boolean | null
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          meeting_id?: string | null
+          name: string
+          status?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          ai_generated?: boolean | null
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          meeting_id?: string | null
+          name?: string
+          status?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_materials_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meeting_arrangements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       oa_meetting: {
         Row: {
           capacity: number | null
