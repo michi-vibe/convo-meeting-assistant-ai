@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,9 +9,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { UserProfileCard } from '@/components/UserProfileCard';
 import { toast } from 'sonner';
-import { User, Edit3, Save, X } from 'lucide-react';
+import { User, Edit3, Save, X, ArrowLeft } from 'lucide-react';
 
 const Profile = () => {
+  const navigate = useNavigate();
   const { userProfile, loading, updateProfile } = useUserProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -62,11 +64,26 @@ const Profile = () => {
     });
   };
 
+  const handleGoBack = () => {
+    navigate(-1); // 返回上一个页面
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">个人资料</h1>
+          <div className="flex items-center gap-4 mb-8">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleGoBack}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              返回
+            </Button>
+            <h1 className="text-3xl font-bold">个人资料</h1>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <UserProfileCard />
             <Card>
@@ -87,8 +104,19 @@ const Profile = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">个人资料</h1>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleGoBack}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              返回
+            </Button>
+            <h1 className="text-3xl font-bold">个人资料</h1>
+          </div>
           {!isEditing && userProfile && (
             <Button onClick={handleEdit} className="flex items-center gap-2">
               <Edit3 className="h-4 w-4" />
