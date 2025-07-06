@@ -61,7 +61,6 @@ const Auth = () => {
       password: "",
       confirmPassword: "",
     },
-    mode: "onChange",
   });
 
   const onLogin = async (values: z.infer<typeof loginSchema>) => {
@@ -177,11 +176,7 @@ const Auth = () => {
                           <Input 
                             placeholder="请输入您的邮箱地址" 
                             type="email"
-                            value={field.value}
-                            onChange={field.onChange}
-                            onBlur={field.onBlur}
-                            name={field.name}
-                            disabled={field.disabled}
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -200,11 +195,7 @@ const Auth = () => {
                             <Input 
                               placeholder="请输入您的密码" 
                               type={showPassword ? "text" : "password"}
-                              value={field.value}
-                              onChange={field.onChange}
-                              onBlur={field.onBlur}
-                              name={field.name}
-                              disabled={field.disabled}
+                              {...field}
                             />
                             <Button
                               type="button"
@@ -282,7 +273,6 @@ const Auth = () => {
                             type="text"
                             autoComplete="username"
                             {...field}
-                            value={field.value || ""}
                             disabled={isLoading}
                           />
                         </FormControl>
@@ -303,7 +293,6 @@ const Auth = () => {
                             type="email" 
                             autoComplete="email"
                             {...field}
-                            value={field.value || ""}
                             disabled={isLoading}
                           />
                         </FormControl>
@@ -325,7 +314,6 @@ const Auth = () => {
                               type={showPassword ? "text" : "password"}
                               autoComplete="new-password"
                               {...field}
-                              value={field.value || ""}
                               disabled={isLoading}
                             />
                             <Button
@@ -361,7 +349,6 @@ const Auth = () => {
                               type={showConfirmPassword ? "text" : "password"}
                               autoComplete="new-password"
                               {...field}
-                              value={field.value || ""}
                               disabled={isLoading}
                             />
                             <Button
