@@ -59,7 +59,7 @@ const Auth = () => {
             <CardDescription className="text-center">
               {isLogin 
                 ? "使用邮箱和密码登录您的账户" 
-                : "填写以下信息创建新账户"
+                : "填写以下信息创建新账户111111"
               }
             </CardDescription>
           </CardHeader>
