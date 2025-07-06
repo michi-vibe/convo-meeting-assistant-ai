@@ -229,7 +229,7 @@ const Chat = () => {
     }
   };
 
-  const handleAction = async (action: string) => {
+  const handleAction = async (action: string, roomId?: number) => {
     switch (action) {
       case 'confirm':
         const confirmMessage: Message = {
@@ -247,11 +247,69 @@ const Chat = () => {
         navigate('/meetings');
         break;
       case 'book':
-        // 模拟跳转到会议室预订
-        alert('正在跳转到OA系统预订会议室...');
+        await handleMeetingBooking(roomId);
         break;
       default:
         break;
+    }
+  };
+
+  const handleMeetingBooking = async (roomId?: number) => {
+    if (!roomId || !user || !currentSessionId) {
+      toast.error('预订信息不完整，请重试');
+      return;
+    }
+
+    try {
+      // 从最近的AI消息中提取会议信息
+      const lastAIMessage = messages.slice().reverse().find(msg => msg.type === 'ai');
+      if (!lastAIMessage) {
+        toast.error('无法获取会议信息，请重试');
+        return;
+      }
+
+      // 构建会议预订请求
+      const bookingData = {
+        sessionId: currentSessionId,
+        meetingRoomId: roomId,
+        title: '新产品发布计划沟通会', // 可以从AI响应中解析
+        description: lastAIMessage.content,
+        startTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 明天
+        endTime: new Date(Date.now() + 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000).toISOString(), // 明天+2小时
+        attendees: [
+          { id: 1, name: '张三', email: 'zhangsan@company.com' },
+          { id: 2, name: '李四', email: 'lisi@company.com' }
+        ] // 可以从oa_user表动态获取
+      };
+
+      const { data, error } = await supabase.functions.invoke('book-meeting', {
+        body: bookingData
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.success) {
+        toast.success(data.message);
+        
+        // 添加预订成功的消息到聊天
+        const successMessage: Message = {
+          id: Date.now().toString(),
+          type: 'ai',
+          content: `✅ ${data.message}\n\n会议详情：\n• 会议室：${data.meeting.room}\n• 时间：${new Date(data.meeting.startTime).toLocaleString()} - ${new Date(data.meeting.endTime).toLocaleString()}\n• 参会人员：${data.meeting.attendees.length}人`,
+          timestamp: new Date(),
+          status: 'sent'
+        };
+        
+        setMessages(prev => [...prev, successMessage]);
+        await saveMessageToDb(successMessage, 'ai');
+      } else {
+        throw new Error(data.message || '预订失败');
+      }
+    } catch (error) {
+      console.error('Meeting booking error:', error);
+      toast.error('会议预订失败，请重试');
     }
   };
 
@@ -346,13 +404,13 @@ const Chat = () => {
                                         </div>
                                       )}
                                     </div>
-                                    <Button 
-                                      size="sm" 
-                                      onClick={() => handleAction('book')}
-                                      className="ml-2"
-                                    >
-                                      预订
-                                    </Button>
+                                     <Button 
+                                       size="sm" 
+                                       onClick={() => handleAction('book', room.id)}
+                                       className="ml-2"
+                                     >
+                                       预订
+                                     </Button>
                                   </div>
                                 </Card>
                               ))}
