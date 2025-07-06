@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { UserMenu } from "@/components/UserMenu";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -156,6 +157,7 @@ const Index = () => {
             </div>
             
             <div className="flex items-center space-x-4">
+              {/* 通知按钮 */}
               <Button variant="ghost" size="sm" className="relative">
                 <Bell className="w-5 h-5" />
                 {notifications > 0 && (
@@ -166,20 +168,7 @@ const Index = () => {
               </Button>
               
               {/* 用户菜单 */}
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center space-x-2 text-sm text-gray-700">
-                  <User className="w-4 h-4" />
-                  <span>{user?.email}</span>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="text-gray-600 hover:text-red-600"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </div>
+              <UserMenu />
             </div>
           </div>
         </div>
