@@ -172,60 +172,66 @@ const ChatHistory = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-160px)]">
           {/* 会话列表 */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
+          <div className="lg:col-span-1 flex flex-col">
+            <Card className="flex-1 flex flex-col">
+              <CardHeader className="flex-shrink-0">
                 <CardTitle className="flex items-center space-x-2">
                   <Calendar className="w-5 h-5" />
                   <span>聊天会话</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent className="flex-1 p-0 overflow-hidden">
                 {loading ? (
-                  <div className="p-6 text-center">
-                    <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-500">加载中...</p>
+                  <div className="p-6 text-center h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
                   </div>
                 ) : sessions.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>暂无聊天记录</p>
-                    <Button 
-                      className="mt-4" 
-                      onClick={() => navigate('/chat')}
-                    >
-                      开始新对话
-                    </Button>
+                  <div className="p-6 text-center text-gray-500 h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>暂无聊天记录</p>
+                      <Button 
+                        className="mt-4" 
+                        onClick={() => navigate('/chat')}
+                      >
+                        开始新对话
+                      </Button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-100">
-                    {sessions.map((session) => (
-                      <div
-                        key={session.id}
-                        className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-                          selectedSession === session.id ? 'bg-blue-50 border-r-2 border-blue-500' : ''
-                        }`}
-                        onClick={() => loadSessionMessages(session.id)}
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-medium text-gray-900 truncate flex-1">
-                            {session.title}
-                          </h3>
-                          <Badge variant="outline" className="ml-2 text-xs">
-                            {session.messageCount}条
-                          </Badge>
+                  <div className="h-full overflow-y-auto">
+                    <div className="divide-y divide-gray-100">
+                      {sessions.map((session) => (
+                        <div
+                          key={session.id}
+                          className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
+                            selectedSession === session.id ? 'bg-blue-50 border-r-2 border-blue-500' : ''
+                          }`}
+                          onClick={() => loadSessionMessages(session.id)}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-medium text-gray-900 truncate flex-1">
+                              {session.title}
+                            </h3>
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              {session.messageCount}条
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">
+                            {truncateMessage(session.lastMessage, 60)}
+                          </p>
+                          <div className="flex items-center space-x-2 text-xs text-gray-400">
+                            <Clock className="w-3 h-3" />
+                            <span>{formatDate(session.updated_at)}</span>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">
-                          {truncateMessage(session.lastMessage, 60)}
-                        </p>
-                        <div className="flex items-center space-x-2 text-xs text-gray-400">
-                          <Clock className="w-3 h-3" />
-                          <span>{formatDate(session.updated_at)}</span>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -233,9 +239,9 @@ const ChatHistory = () => {
           </div>
 
           {/* 消息详情 */}
-          <div className="lg:col-span-2">
-            <Card className="h-[calc(100vh-200px)]">
-              <CardHeader>
+          <div className="lg:col-span-2 flex flex-col">
+            <Card className="flex-1 flex flex-col">
+              <CardHeader className="flex-shrink-0">
                 <CardTitle className="flex items-center space-x-2">
                   <MessageSquare className="w-5 h-5" />
                   <span>
@@ -243,7 +249,7 @@ const ChatHistory = () => {
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 overflow-hidden">
+              <CardContent className="flex-1 p-4 overflow-hidden">
                 {!selectedSession ? (
                   <div className="h-full flex items-center justify-center text-gray-500">
                     <div className="text-center">
@@ -259,11 +265,12 @@ const ChatHistory = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="h-full overflow-y-auto space-y-4 pr-2">
-                    {messages.map((message) => (
+                  <div className="h-full overflow-y-auto space-y-4 pr-2 animate-fade-in">
+                    {messages.map((message, index) => (
                       <div
                         key={message.id}
-                        className={`flex ${message.message_type === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${message.message_type === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
+                        style={{ animationDelay: `${index * 0.05}s` }}
                       >
                         <div className={`flex space-x-3 max-w-[80%] ${
                           message.message_type === 'user' ? 'flex-row-reverse space-x-reverse' : ''
@@ -283,10 +290,10 @@ const ChatHistory = () => {
 
                           {/* 消息内容 */}
                           <div className="flex-1">
-                            <div className={`rounded-2xl px-4 py-3 ${
+                            <div className={`rounded-2xl px-4 py-3 transition-all duration-200 hover:shadow-md ${
                               message.message_type === 'user'
                                 ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                                : 'bg-gray-100 text-gray-900'
+                                : 'bg-gray-100 text-gray-900 hover:bg-gray-50'
                             }`}>
                               <div className="whitespace-pre-wrap">{message.content}</div>
                             </div>
