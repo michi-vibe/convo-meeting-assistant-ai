@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { UserProfileCard } from '@/components/UserProfileCard';
@@ -90,7 +89,7 @@ const Profile = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">个人资料</h1>
-          {!isEditing && (
+          {!isEditing && userProfile && (
             <Button onClick={handleEdit} className="flex items-center gap-2">
               <Edit3 className="h-4 w-4" />
               编辑资料

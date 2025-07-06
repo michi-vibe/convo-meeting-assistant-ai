@@ -36,11 +36,14 @@ export const UserProfileCard = () => {
     return (
       <Card className="w-full max-w-md">
         <CardContent className="pt-6">
-          <p className="text-center text-gray-500">未找到用户信息</p>
+          <p className="text-center text-gray-500">正在加载用户信息...</p>
         </CardContent>
       </Card>
     );
   }
+
+  const displayName = userProfile.real_name || userProfile.display_name || userProfile.username || '用户';
+  const userName = userProfile.username || userProfile.auth_email?.split('@')[0] || '未设置';
 
   return (
     <Card className="w-full max-w-md">
@@ -54,9 +57,9 @@ export const UserProfileCard = () => {
           </Avatar>
           <div>
             <CardTitle className="text-lg">
-              {userProfile.real_name || userProfile.display_name || userProfile.username}
+              {displayName}
             </CardTitle>
-            <p className="text-sm text-gray-600">@{userProfile.username}</p>
+            <p className="text-sm text-gray-600">@{userName}</p>
           </div>
         </div>
       </CardHeader>
