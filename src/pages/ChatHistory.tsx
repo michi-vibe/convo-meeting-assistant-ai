@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Bot, User, MessageSquare, Clock, Calendar } from "lucide-react";
@@ -174,10 +173,10 @@ const ChatHistory = () => {
       </header>
 
       {/* 主要内容区域 */}
-      <div className="flex-1 max-w-7xl mx-auto px-6 py-6 w-full overflow-hidden">
+      <div className="flex-1 max-w-7xl mx-auto px-6 py-6 w-full min-h-0">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
           {/* 会话列表 */}
-          <div className="lg:col-span-1 h-full">
+          <div className="lg:col-span-1 min-h-0">
             <Card className="h-full flex flex-col">
               <CardHeader className="flex-shrink-0 pb-4">
                 <CardTitle className="flex items-center space-x-2">
@@ -185,7 +184,7 @@ const ChatHistory = () => {
                   <span>聊天会话</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 p-0 overflow-hidden">
+              <CardContent className="flex-1 p-0 min-h-0">
                 {loading ? (
                   <div className="p-6 text-center h-full flex items-center justify-center">
                     <div className="text-center">
@@ -208,11 +207,11 @@ const ChatHistory = () => {
                   </div>
                 ) : (
                   <ScrollArea className="h-full">
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-gray-100 px-4">
                       {sessions.map((session) => (
                         <div
                           key={session.id}
-                          className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
+                          className={`py-4 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg px-2 mx-1 ${
                             selectedSession === session.id ? 'bg-blue-50 border-r-2 border-blue-500' : ''
                           }`}
                           onClick={() => loadSessionMessages(session.id)}
@@ -242,7 +241,7 @@ const ChatHistory = () => {
           </div>
 
           {/* 消息详情 */}
-          <div className="lg:col-span-2 h-full">
+          <div className="lg:col-span-2 min-h-0">
             <Card className="h-full flex flex-col">
               <CardHeader className="flex-shrink-0 pb-4">
                 <CardTitle className="flex items-center space-x-2">
@@ -252,7 +251,7 @@ const ChatHistory = () => {
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 p-4 overflow-hidden">
+              <CardContent className="flex-1 p-4 min-h-0">
                 {!selectedSession ? (
                   <div className="h-full flex items-center justify-center text-gray-500">
                     <div className="text-center">
@@ -269,7 +268,7 @@ const ChatHistory = () => {
                   </div>
                 ) : (
                   <ScrollArea className="h-full">
-                    <div className="space-y-4 pr-2">
+                    <div className="space-y-4 pr-2 pb-4">
                       {messages.map((message, index) => (
                         <div
                           key={message.id}
@@ -299,7 +298,7 @@ const ChatHistory = () => {
                                   ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
                                   : 'bg-gray-100 text-gray-900 hover:bg-gray-50'
                               }`}>
-                                <div className="whitespace-pre-wrap">{message.content}</div>
+                                <div className="whitespace-pre-wrap break-words">{message.content}</div>
                               </div>
                               
                               {/* 时间戳 */}
